@@ -1,0 +1,38 @@
+# Command line interface
+
+import logging
+import argparse
+from commands import cmd_init, cmd_add, cmd_commit
+logger = logging.getLogger(__name__)
+
+def main():
+    logging.basicConfig(filename="pygit.log", 
+                        level=logging.DEBUG,
+                        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+                        filemode='w')
+
+    parser = argparse.ArgumentParser(description="Pygit - A simple git clone in Python.")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands.", required=True)
+
+    # Init command
+    parser_init = subparsers.add_parser("init", help="Init a new, empty repository.")
+    parser_init.add_argument("path", nargs="?", default=".", help="Optional path where repo should be created.")
+    parser_init.set_defaults(func=cmd_init)
+
+    # Add command
+    parser_add = subparsers.add_parser("add", help="Add file contents to the index.")
+    parser_add.add_argument("files", nargs="+", help="Files to add.")
+    parser_add.set_defaults(func=cmd_add)
+
+    # Commit command
+    parser_commit = subparsers.add_parser("commit", help="Record changes to the repository.")
+    parser_commit.add_argument("-m", "--message", required=True, help="Commit message.")
+    parser_commit.set_defaults(func=cmd_commit)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
+        
