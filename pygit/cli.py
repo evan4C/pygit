@@ -2,7 +2,8 @@
 
 import logging
 import argparse
-from pygit.cmds import init, add, commit
+from pygit.cmds import init, add, commit, cat
+from pygit.repository import Repository
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,11 @@ def create_parser():
     parser_commit.add_argument("-m", "--message", required=True, help="Commit message.")
     parser_commit.set_defaults(func=commit)
     
+    # Cat command
+    parser_cat = subparsers.add_parser("cat-file", help="Provide content for repository objects.")
+    parser_cat.add_argument("sha1-hash", help="The hash of the object to display.")
+    parser_cat.set_defaults(func=cat)
+
     return parser
 
 def main():
@@ -36,7 +42,15 @@ def main():
 
     parser = create_parser()
     args = parser.parse_args()
-    args.func(args)
+    if args.command == "init":
+        args.func(args)
+    else:
+        try:
+            repo = Repository(".") # find repo starting from current dir
+            args.func(repo, args)
+        except Exception as e:
+            logger.error(f"Error: {e}", exc_info=True)
+            exit(1)
 
 if __name__ == "__main__":
     main()
